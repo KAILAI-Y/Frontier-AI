@@ -1,0 +1,13 @@
+# Python runtime artifacts
+__pycache__/
+*.pyc
+
+# Local scratch/debug files
+tmp/
+.DS_Store
+
+# Personal planning notes not meant for submission
+README_INTERNAL_CN.md
+
+# Local secrets
+.env
