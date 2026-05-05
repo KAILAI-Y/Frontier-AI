@@ -224,7 +224,11 @@ class ItemExtractionAgent:
         return mapping.get(str(value or "").lower(), "")
 
     def extract_unit(self, item: dict[str, Any]) -> str:
-        for candidate in [item.get("description"), item.get("name")]:
+        for candidate in [
+            item.get("description"),
+            item.get("short_description"),
+            item.get("name"),
+        ]:
             unit = self.extract_unit_from_text(self.clean_text(candidate))
             if unit:
                 return unit
@@ -234,11 +238,22 @@ class ItemExtractionAgent:
     def extract_unit_from_text(text: str) -> str:
         patterns = [
             r"\b\d+(?:\.\d+)?\s*oz\s+bottle\b",
+            r"\b\d+(?:\.\d+)?\s*(?:oz|ml|cc)\b",
             r"\b\d+\s*-\s*pack\b",
+            r"\b\d+\s*-\s*box\b",
+            r"\b\d+\s*-\s*bag\b",
             r"\b\d+\s*pack\b",
             r"\b\d+\s*/\s*box\b",
+            r"\b\d+\s*/\s*bag\b",
+            r"\b\d+\s*/\s*pack\b",
+            r"\b\d+\s*/\s*pkg\b",
             r"\b\d+\s+gloves\s+per\s+box\b",
+            r"\b\d+\s+gloves\s+per\s+bag\b",
             r"\b\d+\s*/\s*case\b",
+            r"\b\d+\s*/\s*bottle\b",
+            r"\b\d+\s*/\s*jar\b",
+            r"\b\d+\s*/\s*tray\b",
+            r"\b\d+\s*/\s*kit\b",
         ]
         for pattern in patterns:
             match = re.search(pattern, text, flags=re.IGNORECASE)

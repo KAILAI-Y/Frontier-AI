@@ -50,6 +50,8 @@ Category Page
   - CLI entrypoint for detail extraction and output writing.
 - `scraper/run_llm_alternatives.py`
   - CLI entrypoint for Gemini-based alternative product enrichment.
+- `scraper/run_goal_crawl.py`
+  - CLI entrypoint for goal-driven category resolution plus downstream extraction.
 - `scraper/run_llm_irregular.py`
   - CLI entrypoint for probing unsupported-layout pages with an LLM-based irregular extraction fallback.
 - `scraper/agents/`
@@ -257,6 +259,24 @@ Recommended order:
 3. enrich alternative fields with Gemini
 4. optionally probe unsupported pages with the irregular-layout LLM step
 
+If you want to start from a higher-level instruction instead of a known category slug, you can use the goal-driven entrypoint:
+
+```bash
+python3 scraper/run_goal_crawl.py \
+  --goal "Collect all gloves product information from this company website." \
+  --output output/products.csv \
+  --report output/crawl_report.csv \
+  --checkpoint output/checkpoint.csv
+```
+
+That workflow:
+- first classifies whether the goal is a product-category request
+- starts from the Safco homepage
+- collects visible category candidates
+- uses Gemini to match the goal against that category inventory when an API key is available
+- falls back to rule-based matching if Gemini is disabled or unavailable
+- runs the existing visible-link discovery and detail extraction pipeline
+
 ### Prerequisites
 
 - Python 3.11+ recommended
@@ -296,6 +316,35 @@ python3 scraper/discover_links.py \
   --category sutures-surgical-products \
   --output output/product_links.csv
 ```
+
+### Run Goal-Driven Crawl
+
+Resolve a category from a high-level goal and then run the normal extraction pipeline:
+
+```bash
+python3 scraper/run_goal_crawl.py \
+  --goal "Collect all gloves product information from this company website." \
+  --output output/products.csv \
+  --report output/crawl_report.csv \
+  --checkpoint output/checkpoint.csv
+```
+
+You can also run it interactively and type the request when prompted:
+
+```bash
+python3 scraper/run_goal_crawl.py \
+  --output output/products.csv \
+  --report output/crawl_report.csv \
+  --checkpoint output/checkpoint.csv
+```
+
+Current design notes:
+- the goal must describe a product/category information request, not arbitrary site content
+- the planner starts from the Safco homepage
+- it collects visible `/catalog/` candidates from the homepage and catalog root
+- it uses Gemini-based semantic matching over those category candidates when available
+- it falls back to keyword relevance scoring if no Gemini key is configured
+- once a category is selected, the downstream workflow is the same as the standard pipeline
 
 ### Run Item-Level Detail Extraction
 
@@ -551,4 +600,3 @@ This submission stays in POC scope. I focused implementation on the parts that c
 - The primary workflow is runnable today for the two target categories.
 - The system already separates navigation, extraction, classification, deduplication, LLM enrichment, experimental irregular-page probing, and recovery concerns.
 - The biggest design choice in this project was switching category discovery to visible rendered links instead of relying only on upstream listing/index data.
-

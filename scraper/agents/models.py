@@ -53,3 +53,29 @@ class RecoveryDecision:
     error_type: str
     error_message: str
     fallback_used: str
+
+
+@dataclass
+class CategoryCandidate:
+    category_url: str
+    anchor_text: str
+    score: float
+    reason: str
+
+
+@dataclass
+class GoalPlan:
+    goal: str
+    keywords: list[str]
+    selected_category_url: str
+    selected_anchor_text: str
+    candidates: list[CategoryCandidate]
+
+
+@dataclass
+class IntentDecision:
+    intent_type: str
+    is_category_product_request: bool
+    confidence: float
+    reason: str
+    extracted_keywords: list[str]
